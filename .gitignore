@@ -159,6 +159,7 @@ PublishScripts/
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/packages/repositories.config
 # NuGet v3's project.json files produces more ignoreable files
+*.lock.json
 *.nuget.props
 *.nuget.targets
 
