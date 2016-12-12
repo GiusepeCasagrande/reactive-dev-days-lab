@@ -26,40 +26,28 @@ namespace DevDaysSpeakers.ViewModel
 
         public SpeakersViewModel()
         {
-            this.getSpeakers = ReactiveCommand.CreateFromTask(async () => await GetSpeakersAsync());
+            var service = DependencyService.Get<AzureService>();
 
-            this.getSpeakers.IsExecuting.ToProperty(this, vm => vm.IsBusy, out busy);
+            this.getSpeakers = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var items = await service.GetSpeakers();
+
+                Speakers.Clear();
+                foreach (var item in items)
+                    Speakers.Add(item);
+            });
+
+            this.getSpeakers.IsExecuting
+                .ToProperty(this, vm => vm.IsBusy, out busy);
+
+            this.getSpeakers.ThrownExceptions
+                .Subscribe(error => Application.Current.MainPage.DisplayAlert("Error!", error.Message, "OK"));
         }
 
         readonly ObservableAsPropertyHelper<bool> busy;
         public bool IsBusy
         {
             get { return busy.Value; }
-        }
-        
-        async Task GetSpeakersAsync()
-        {
-            if (IsBusy)
-                return;
-
-            Exception error = null;
-            try
-            {
-                var service = DependencyService.Get<AzureService>();
-                var items = await service.GetSpeakers();
-
-                Speakers.Clear();
-                foreach (var item in items)
-                    Speakers.Add(item);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Error: " + ex);
-                error = ex;
-            }
-
-            if (error != null)
-                await Application.Current.MainPage.DisplayAlert("Error!", error.Message, "OK");
         }
     }
 }

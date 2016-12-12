@@ -29,14 +29,14 @@ namespace DevDaysSpeakers.View
             this.WhenActivated(disposables =>
             {
                 ButtonSpeak.Events().Clicked
-                    .Subscribe(e =>
+                    .Subscribe(_ =>
                     {
                         CrossTextToSpeech.Current.Speak(this.speaker.Description);
                     })
                     .DisposeWith(disposables);
 
                 ButtonWebsite.Events().Clicked
-                    .Subscribe(e =>
+                    .Subscribe(_ =>
                     {
                         if (speaker.Website.StartsWith("http"))
                             Device.OpenUri(new Uri(speaker.Website));
