@@ -2,6 +2,8 @@
   "supports": {},
   "dependencies": {
     "Microsoft.Azure.Mobile.Client.SQLiteStore": "3.0.3",
+    "reactiveui-events-xamforms": "7.0.0",
+    "reactiveui-xamforms": "7.0.0",
     "SQLitePCLRaw.bundle_e_sqlite3": "1.1.1",
     "Xam.Plugins.TextToSpeech": "2.0.0",
     "Xamarin.Forms": "2.3.3.175"

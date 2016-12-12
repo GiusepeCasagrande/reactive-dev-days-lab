@@ -13,40 +13,31 @@ using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using DevDaysSpeakers.Services;
+using ReactiveUI;
 
 namespace DevDaysSpeakers.ViewModel
 {
-    public class SpeakersViewModel : INotifyPropertyChanged
+    public class SpeakersViewModel : ReactiveObject
     {
-        public ObservableCollection<Speaker> Speakers { get; set; }
-        public Command GetSpeakersCommand { get; set; }
+        public ReactiveList<Speaker> Speakers { get; } = new ReactiveList<Speaker>();
+
+        readonly ReactiveCommand getSpeakers;
+        public ReactiveCommand GetSpeakers => this.getSpeakers;
+
         public SpeakersViewModel()
         {
-            
-            Speakers = new ObservableCollection<Speaker>();
-            GetSpeakersCommand = new Command(
-                async () => await GetSpeakers(),
-                () => !IsBusy);
+            this.getSpeakers = ReactiveCommand.CreateFromTask(async () => await GetSpeakersAsync());
 
+            this.getSpeakers.IsExecuting.ToProperty(this, vm => vm.IsBusy, out busy);
         }
 
-        bool busy;
-
+        readonly ObservableAsPropertyHelper<bool> busy;
         public bool IsBusy
         {
-            get { return busy; }
-            set
-            {
-                busy = value;
-                OnPropertyChanged();
-
-                GetSpeakersCommand.ChangeCanExecute();
-            }
+            get { return busy.Value; }
         }
-
-
-
-        async Task GetSpeakers()
+        
+        async Task GetSpeakersAsync()
         {
             if (IsBusy)
                 return;
@@ -54,8 +45,6 @@ namespace DevDaysSpeakers.ViewModel
             Exception error = null;
             try
             {
-                IsBusy = true;
-
                 var service = DependencyService.Get<AzureService>();
                 var items = await service.GetSpeakers();
 
@@ -68,25 +57,9 @@ namespace DevDaysSpeakers.ViewModel
                 Debug.WriteLine("Error: " + ex);
                 error = ex;
             }
-            finally
-            {
-                IsBusy = false;
-            }
 
             if (error != null)
                 await Application.Current.MainPage.DisplayAlert("Error!", error.Message, "OK");
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            var changed = PropertyChanged;
-
-            if (changed == null)
-                return;
-
-            changed.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }

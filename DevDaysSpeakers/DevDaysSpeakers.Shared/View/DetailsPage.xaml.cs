@@ -9,10 +9,14 @@ using Xamarin.Forms;
 using DevDaysSpeakers.Model;
 using Plugin.TextToSpeech;
 using DevDaysSpeakers.ViewModel;
+using ReactiveUI;
+using ReactiveUI.XamForms;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 
 namespace DevDaysSpeakers.View
 {
-    public partial class DetailsPage : ContentPage
+    public partial class DetailsPage : ContentPage, IActivatable
     {
         Speaker speaker;
         public DetailsPage(Speaker item)
@@ -22,21 +26,23 @@ namespace DevDaysSpeakers.View
 
             BindingContext = this.speaker;
 
-            ButtonSpeak.Clicked += ButtonSpeak_Clicked;
+            this.WhenActivated(disposables =>
+            {
+                ButtonSpeak.Events().Clicked
+                    .Subscribe(e =>
+                    {
+                        CrossTextToSpeech.Current.Speak(this.speaker.Description);
+                    })
+                    .DisposeWith(disposables);
 
-            ButtonWebsite.Clicked += ButtonWebsite_Clicked;
-            
-        }
-
-        private void ButtonWebsite_Clicked(object sender, EventArgs e)
-        {
-            if (speaker.Website.StartsWith("http"))
-                Device.OpenUri(new Uri(speaker.Website));
-        }
-
-        private void ButtonSpeak_Clicked(object sender, EventArgs e)
-        {
-            CrossTextToSpeech.Current.Speak(this.speaker.Description);
+                ButtonWebsite.Events().Clicked
+                    .Subscribe(e =>
+                    {
+                        if (speaker.Website.StartsWith("http"))
+                            Device.OpenUri(new Uri(speaker.Website));
+                    })
+                    .DisposeWith(disposables);
+            });
         }
     }
 }
