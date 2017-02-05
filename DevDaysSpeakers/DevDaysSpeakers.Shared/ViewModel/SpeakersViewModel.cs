@@ -1,53 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Xamarin.Forms;
-using DevDaysSpeakers.Model;
-using System.Net.Http;
-using Newtonsoft.Json;
-using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
+﻿using DevDaysSpeakers.Model;
 using DevDaysSpeakers.Services;
 using ReactiveUI;
+using Splat;
+using System;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using Xamarin.Forms;
 
 namespace DevDaysSpeakers.ViewModel
 {
-    public class SpeakersViewModel : ReactiveObject
+    public class SpeakersViewModel 
+        : ReactiveObject
+        , IRoutableViewModel
     {
+        public string UrlPathSegment => GetType().FullName;
+
+        public IScreen HostScreen { get; }
+
         public ReactiveList<Speaker> Speakers { get; } = new ReactiveList<Speaker>();
 
-        readonly ReactiveCommand getSpeakers;
-        public ReactiveCommand GetSpeakers => this.getSpeakers;
+        public ReactiveCommand GetSpeakers { get; }
 
-        public SpeakersViewModel()
+        readonly ObservableAsPropertyHelper<bool> busy;
+        public bool IsBusy => busy.Value;
+
+        public SpeakersViewModel(
+            IScreen hostScreen = null, 
+            AzureService azureService = null)
         {
-            var service = DependencyService.Get<AzureService>();
+            HostScreen = hostScreen ?? Locator.Current.GetService<IScreen>();
 
-            this.getSpeakers = ReactiveCommand.CreateFromObservable(() => service.GetSpeakers().ToObservable()
+            var service = azureService ?? DependencyService.Get<AzureService>();
+
+            GetSpeakers = ReactiveCommand.CreateFromObservable(() => service.GetSpeakers().ToObservable()
                 .SelectMany(speakers => Observable.Start(() => 
                 {
                     Speakers.Clear();
                     Speakers.AddRange(speakers);
                 }, RxApp.MainThreadScheduler)));
 
-            this.getSpeakers.IsExecuting
+            GetSpeakers.IsExecuting
                 .ToProperty(this, vm => vm.IsBusy, out busy);
 
-            this.getSpeakers.ThrownExceptions
+            GetSpeakers.ThrownExceptions
                 .Subscribe(error => Application.Current.MainPage.DisplayAlert("Error!", error.Message, "OK"));
-        }
-
-        readonly ObservableAsPropertyHelper<bool> busy;
-        public bool IsBusy
-        {
-            get { return busy.Value; }
         }
     }
 }

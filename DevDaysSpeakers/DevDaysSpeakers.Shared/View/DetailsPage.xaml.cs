@@ -1,48 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Xamarin.Forms;
-
-using DevDaysSpeakers.Model;
-using Plugin.TextToSpeech;
-using DevDaysSpeakers.ViewModel;
-using ReactiveUI;
+﻿using DevDaysSpeakers.ViewModel;
 using ReactiveUI.XamForms;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using Xamarin.Forms;
 
 namespace DevDaysSpeakers.View
 {
-    public partial class DetailsPage : ContentPage, IActivatable
+    public partial class DetailsPage 
+        : ReactiveContentPage<DetailsViewModel>
     {
-        Speaker speaker;
-        public DetailsPage(Speaker item)
+        public DetailsPage()
         {
             InitializeComponent();
-            this.speaker = item;
 
-            BindingContext = this.speaker;
-
-            this.WhenActivated(disposables =>
-            {
-                ButtonSpeak.Events().Clicked
-                    .Subscribe(_ =>
-                    {
-                        CrossTextToSpeech.Current.Speak(this.speaker.Description);
-                    })
-                    .DisposeWith(disposables);
-
-                ButtonWebsite.Events().Clicked
-                    .Subscribe(_ =>
-                    {
-                        if (speaker.Website.StartsWith("http"))
-                            Device.OpenUri(new Uri(speaker.Website));
-                    })
-                    .DisposeWith(disposables);
-            });
+            ViewModel = new DetailsViewModel();
+            BindingContext = ViewModel;
         }
     }
 }
