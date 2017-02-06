@@ -1,6 +1,7 @@
 ﻿using DevDaysSpeakers.View;
 using DevDaysSpeakers.ViewModel;
 using Xamarin.Forms;
+using Xamvvm;
 
 namespace DevDaysSpeakers
 {
@@ -14,7 +15,11 @@ namespace DevDaysSpeakers
             var content = new SpeakersPage();
 
             AppBootstrapper = new AppBootstrapper();
-            MainPage = new NavigationPage(content);
+
+            var factory = new XamvvmFormsRxUIFactory(this);
+            XamvvmCore.SetCurrentFactory(factory);
+
+            MainPage = this.GetPageFromCache<SpeakersViewModel>() as Page;
         }
       
         protected override void OnStart()

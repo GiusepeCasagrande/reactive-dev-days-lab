@@ -1,18 +1,16 @@
-﻿
-using DevDaysSpeakers.Model;
+﻿using DevDaysSpeakers.Model;
 using DevDaysSpeakers.ViewModel;
 using ReactiveUI;
-using ReactiveUI.XamForms;
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
 using Xamarin.Forms;
+using Xamvvm;
 
 namespace DevDaysSpeakers.View
 {
     public partial class SpeakersPage 
-        : ReactiveContentPage<SpeakersViewModel>
+        : IBasePageRxUI<SpeakersViewModel>
     {
         public SpeakersPage()
         {
@@ -25,10 +23,7 @@ namespace DevDaysSpeakers.View
             {
                 ListViewSpeakers.Events().ItemSelected
                     .Select(e => e.SelectedItem as Speaker)
-                    .Where(speaker => speaker != null)
-                    .SelectMany(speaker => ViewModel.HostScreen.Router.NavigationStack.Add(new DetailsViewModel(speaker)))
-                    .Do(_ => ListViewSpeakers.SelectedItem = null)
-                    .Subscribe()
+                    .Subscribe(speaker => ViewModel.Speaker = speaker)
                     .DisposeWith(disposables);
             });
         }

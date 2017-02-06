@@ -1,41 +1,41 @@
 ﻿using DevDaysSpeakers.Model;
-using DevDaysSpeakers.Services;
 using Plugin.TextToSpeech;
 using ReactiveUI;
 using Splat;
 using System;
-using System.Linq;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
 using Xamarin.Forms;
+using Xamvvm;
 
 namespace DevDaysSpeakers.ViewModel
 {
     public class DetailsViewModel
-        : ReactiveObject
-        , IRoutableViewModel
+        : BasePageModelRxUI
     {
-        public string UrlPathSegment => GetType().FullName;
+        public Speaker Speaker { get; set; }
 
-        public IScreen HostScreen { get; }
+        public string Name => Speaker.Name;
 
-        public ReactiveCommand Speak { get; }
+        public string Title => Speaker.Title;
 
-        public ReactiveCommand VisitWebSite { get; }
+        public string Description => Speaker.Description;
 
-        public DetailsViewModel(
-            Speaker speaker,
-            IScreen hostScreen = null)
+        public string Avatar => Speaker.Avatar;
+
+        //public ReactiveCommand Speak { get; }
+
+        //public ReactiveCommand VisitWebSite { get; }
+
+        public DetailsViewModel()
         {
-            HostScreen = hostScreen ?? Locator.Current.GetService<IScreen>();
+            //Speak = ReactiveCommand.CreateFromObservable(() => Observable.Start(() => 
+            //    CrossTextToSpeech.Current.Speak(speaker.Description)));
 
-            Speak = ReactiveCommand.CreateFromObservable(
-                () => Observable.Start(() => CrossTextToSpeech.Current.Speak(speaker.Description)));
-
-            var canVisitWebSite = Observable.Start(() => speaker.Website.StartsWith("http"));
-            VisitWebSite = ReactiveCommand.CreateFromObservable(
-                () => Observable.Start(() => Device.OpenUri(new Uri(speaker.Website))),
-                canVisitWebSite);
+            //var canVisitWebSite = this.WhenAnyValue(vm => vm.Speaker)
+            //    .Select(speaker => speaker.Website.StartsWith("http"));
+            //VisitWebSite = ReactiveCommand.CreateFromObservable(
+            //    () => Observable.Start(() => Device.OpenUri(new Uri(speaker.Website))),
+            //    canVisitWebSite);
         }
     }
 }

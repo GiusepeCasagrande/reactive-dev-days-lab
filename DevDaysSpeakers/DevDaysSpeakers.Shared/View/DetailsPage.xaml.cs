@@ -1,11 +1,10 @@
 ﻿using DevDaysSpeakers.ViewModel;
-using ReactiveUI.XamForms;
-using Xamarin.Forms;
+using Xamvvm;
 
 namespace DevDaysSpeakers.View
 {
     public partial class DetailsPage 
-        : ReactiveContentPage<DetailsViewModel>
+        : IBasePageRxUI<DetailsViewModel>
     {
         public DetailsPage()
         {

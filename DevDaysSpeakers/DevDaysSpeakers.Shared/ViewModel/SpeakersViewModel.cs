@@ -7,33 +7,41 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using Xamarin.Forms;
+using Xamvvm;
 
 namespace DevDaysSpeakers.ViewModel
 {
     public class SpeakersViewModel 
-        : ReactiveObject
-        , IRoutableViewModel
+        : BasePageModelRxUI
     {
-        public string UrlPathSegment => GetType().FullName;
-
-        public IScreen HostScreen { get; }
-
         public ReactiveList<Speaker> Speakers { get; } = new ReactiveList<Speaker>();
 
+        Speaker speaker;
+        public Speaker Speaker
+        {
+            get { return speaker; }
+            set { this.RaiseAndSetIfChanged(ref speaker, value); }
+        }
+
         public ReactiveCommand GetSpeakers { get; }
+
+        public ReactiveCommand GoToDetails { get; }
 
         readonly ObservableAsPropertyHelper<bool> busy;
         public bool IsBusy => busy.Value;
 
-        public SpeakersViewModel(
-            IScreen hostScreen = null, 
-            AzureService azureService = null)
+        public SpeakersViewModel()
+            : this(null)
         {
-            HostScreen = hostScreen ?? Locator.Current.GetService<IScreen>();
 
+        }
+
+        public SpeakersViewModel(AzureService azureService = null)
+        {
             var service = azureService ?? DependencyService.Get<AzureService>();
 
-            GetSpeakers = ReactiveCommand.CreateFromObservable(() => service.GetSpeakers().ToObservable()
+            GetSpeakers = ReactiveCommand.CreateFromObservable(() => 
+                service.GetSpeakers().ToObservable()
                 .SelectMany(speakers => Observable.Start(() => 
                 {
                     Speakers.Clear();
@@ -45,6 +53,12 @@ namespace DevDaysSpeakers.ViewModel
 
             GetSpeakers.ThrownExceptions
                 .Subscribe(error => Application.Current.MainPage.DisplayAlert("Error!", error.Message, "OK"));
+
+            // go to details page when Speaker is set
+            this.WhenAnyValue(vm => vm.Speaker)
+                .Where(speaker => speaker != null)
+                .SelectMany(speaker => this.PushPageFromCacheAsync<DetailsViewModel>(vm => vm.Speaker = speaker).ToObservable())
+                .Subscribe();
         }
     }
 }

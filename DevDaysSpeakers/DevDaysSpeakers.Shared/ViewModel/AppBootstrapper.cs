@@ -27,7 +27,7 @@ namespace DevDaysSpeakers.ViewModel
             //dependencyResolver.Register(() => new SpeakersViewModel(), typeof(IViewFor<SpeakersViewModel>));
             //dependencyResolver.Register(() => new DetailsViewModel(), typeof(IViewFor<DetailsViewModel>));
 
-            Router.Navigate.Execute(new SpeakersViewModel(this));
+            // Router.Navigate.Execute(new SpeakersViewModel(this));
             // Router.NavigationStack.Add(new DetailsViewModel(this));
         }
 
